@@ -1,6 +1,7 @@
 package com.heather.djroomba.services.impl;
 
 import com.heather.djroomba.data.Room;
+import com.heather.djroomba.exceptions.BadInputException;
 import com.heather.djroomba.services.LayoutService;
 import org.springframework.stereotype.Service;
 
@@ -16,7 +17,11 @@ public class LayoutServiceImpl implements LayoutService {
         int[][] cleaningGrid = new int[areaSize[0]][areaSize[1]];
 
         // Add dirt
-        dirtPatches.forEach(dirtPatch -> cleaningGrid[dirtPatch[0]][dirtPatch[1]] = 1);
+        try {
+            dirtPatches.forEach(dirtPatch -> cleaningGrid[dirtPatch[0]][dirtPatch[1]] = 1);
+        } catch (ArrayIndexOutOfBoundsException e) {
+            throw new BadInputException("Sorry, we can't clean that! " + e.getMessage());
+        }
 
         return new Room(cleaningGrid);
     }

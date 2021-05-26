@@ -4,6 +4,7 @@ import com.heather.djroomba.data.CleanUpRequest;
 import com.heather.djroomba.data.CleanUpResponse;
 import com.heather.djroomba.data.Room;
 import com.heather.djroomba.data.Roomba;
+import com.heather.djroomba.exceptions.BadInputException;
 import com.heather.djroomba.services.LayoutService;
 import com.heather.djroomba.services.RoombaService;
 import org.slf4j.Logger;
@@ -31,7 +32,7 @@ public class RoombaServiceImpl implements RoombaService {
         for (Character c : roomba.getInstructions().toCharArray()) {
             switch (c) {
                 case 'N':
-                    Y = Math.min(Y + 1, grid[X].length - 1);
+                    Y = Math.min(Y + 1, grid[X].length - 1); // Spin out safely at walls
                     break;
                 case 'S':
                     Y = Math.max(Y - 1, 0);
@@ -44,7 +45,7 @@ public class RoombaServiceImpl implements RoombaService {
                     roomba.tryCleaning(X, Y);
                     break;
                 default:
-                    System.out.println("Weird char " + c); //TODO throw exception
+                    throw new BadInputException("Err what? That's not a direction.");
             }
             roomba.tryCleaning(X, Y);
         }
@@ -58,11 +59,20 @@ public class RoombaServiceImpl implements RoombaService {
     public Roomba generateRoomba(CleanUpRequest cleanUpRequest) {
         Roomba roomba = new Roomba();
         roomba.setStartingPosition(cleanUpRequest.getCoords());
-        roomba.setInstructions(cleanUpRequest.getInstructions());
+        roomba.setInstructions(cleanUpRequest.getInstructions().toUpperCase());
 
         Room room = layoutService.mapRoom(cleanUpRequest.getRoomSize(), cleanUpRequest.getPatches());
         roomba.setRoom(room);
 
+        verifyStart(roomba);
+
         return roomba;
+    }
+
+    private void verifyStart(Roomba roomba) {
+        if (roomba.getStartingPosition()[0] > roomba.getRoom().getFloorPlan().length ||
+                roomba.getStartingPosition()[1] > roomba.getRoom().getFloorPlan()[0].length) {
+            throw new BadInputException(String.format("%s can't start there, they don't even know where that is!", roomba.getName()));
+        }
     }
 }

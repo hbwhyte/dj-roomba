@@ -4,6 +4,7 @@ import com.heather.djroomba.data.CleanUpRequest;
 import com.heather.djroomba.data.CleanUpResponse;
 import com.heather.djroomba.data.Room;
 import com.heather.djroomba.data.Roomba;
+import com.heather.djroomba.exceptions.BadInputException;
 import com.heather.djroomba.impl.util.CleanUpRequestBuilder;
 import com.heather.djroomba.impl.util.RoomBuilder;
 import com.heather.djroomba.impl.util.RoombaBuilder;
@@ -18,6 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -74,8 +76,6 @@ class RoombaServiceImplTest {
                 .contains(new int[]{1, 3}, 1);
     }
 
-    // TODO Test case -> clean on first/last square; hit the wall
-
     @Test
     void generateRoombaTest() {
         CleanUpRequest request = new CleanUpRequestBuilder().createRequest().build();
@@ -87,12 +87,14 @@ class RoombaServiceImplTest {
         assertThat(robbie.getRoom()).isNotNull();
     }
 
-    private Integer[][] dirtPatchBuilder() {
-        return new Integer[][]{
-                {0, 0, 0, 0, 0},
-                {1, 0, 0, 0, 0},
-                {0, 0, 1, 1, 0},
-                {0, 0, 0, 0, 0},
-                {0, 0, 0, 0, 0}};
+    @Test
+    void generateRobot_badStart() {
+        CleanUpRequest request = new CleanUpRequestBuilder().createRequest().build();
+        request.setCoords(new int[]{10, 10});
+        when(layoutService.mapRoom(any(), any())).thenReturn(new RoomBuilder().getLayout().build());
+        assertThatThrownBy(() -> underTest.generateRoomba(request))
+                .isInstanceOf(BadInputException.class)
+                .hasMessage("DJ Roomba can't start there, they don't even know where that is!");
     }
+
 }
