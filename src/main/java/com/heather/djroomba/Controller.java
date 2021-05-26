@@ -16,12 +16,12 @@ import static java.util.Objects.isNull;
 public class Controller {
 
     /**
-     * Create and deploy a robot to clean up the room, if given proper instructions
+     * Create and deploy a roomba to clean up the room, if given proper instructions
      */
     @RequestMapping(method = RequestMethod.POST, value = "/clean")
     public CleanUpResponse instructCleanUp(@RequestBody CleanUpRequest request) {
         verifyRequestFieldsNonNull(request);
-        //TODO create robot + instruct to clean
+        //TODO create roomba + instruct to clean
         return null;
     }
 
@@ -29,7 +29,7 @@ public class Controller {
         Field[] fields = cleanUpRequest.getClass().getDeclaredFields();
         for (Field field : fields) {
             if (isNull(field)) {
-                throw new BadInputException("Cannot deploy robot with incomplete instructions");
+                throw new BadInputException("Cannot deploy roomba with incomplete instructions");
             }
         }
     }
